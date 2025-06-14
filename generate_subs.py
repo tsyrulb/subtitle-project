@@ -66,7 +66,6 @@ def generate_subtitles(video_path, model_name="base"):
     print("Transcribing audio (this may take a while)...")
     try:
         # We specify the language as 'ko' for Korean.
-        # word_timestamps=True is crucial for getting accurate timing for each segment.
         result = model.transcribe(audio_path, language='ko', word_timestamps=True)
     except Exception as e:
         print(f"Error during transcription: {e}")
@@ -131,13 +130,9 @@ def generate_subtitles(video_path, model_name="base"):
 
 if __name__ == '__main__':
     # --- CONFIGURATION ---
-    # Replace this with the path to your video file
-    # Example for Windows: "C:\\Users\\YourUser\\Videos\\my_video.mp4"
-    # Example for Mac/Linux: "/home/user/videos/my_video.mp4"
     VIDEO_FILE_PATH = "korean_video_sample.mp4" 
     
     # Choose your model. Options: "tiny", "base", "small", "medium", "large"
-    # "base" is a good starting point. Use "medium" or "large" for higher accuracy.
     WHISPER_MODEL = "base"
     
     # --- EXECUTION ---
