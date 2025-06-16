@@ -22,13 +22,13 @@ def format_time(seconds):
 
 def generate_subtitles(video_path, model_name="base"):
     """
-    Generates subtitles in English and Russian from a Korean video file.
+    Generates subtitles in English, Russian, and Korean from a Korean video file.
 
     This function performs the following steps:
     1. Extracts audio from the video file.
     2. Transcribes the Korean audio to text with word-level timestamps using Whisper.
     3. Translates the transcribed text to English and Russian.
-    4. Creates .srt subtitle files for each language.
+    4. Creates .srt subtitle files for all three languages.
 
     Args:
         video_path (str): The path to the input video file.
@@ -66,6 +66,7 @@ def generate_subtitles(video_path, model_name="base"):
     print("Transcribing audio (this may take a while)...")
     try:
         # We specify the language as 'ko' for Korean.
+        # word_timestamps=True is crucial for getting accurate timing for each segment.
         result = model.transcribe(audio_path, language='ko', word_timestamps=True)
     except Exception as e:
         print(f"Error during transcription: {e}")
@@ -74,7 +75,7 @@ def generate_subtitles(video_path, model_name="base"):
 
     print("Transcription complete.")
     
-    # --- Step 3 & 4: Translate and Create SRT Files ---
+    # --- Step 3 & 4: Translate, Format, and Create SRT Files ---
     print("Step 3/4: Translating and formatting subtitles...")
 
     # Initialize translators
@@ -88,10 +89,13 @@ def generate_subtitles(video_path, model_name="base"):
 
     srt_path_en = f"{base_filename}_en.srt"
     srt_path_ru = f"{base_filename}_ru.srt"
+    srt_path_ko = f"{base_filename}_ko.srt"
 
     try:
+        # Open all three files for writing. Use 'utf-8-sig' for Russian/Korean for max compatibility.
         with open(srt_path_en, "w", encoding="utf-8") as srt_file_en, \
-             open(srt_path_ru, "w", encoding="utf-8") as srt_file_ru:
+             open(srt_path_ru, "w", encoding="utf-8-sig") as srt_file_ru, \
+             open(srt_path_ko, "w", encoding="utf-8-sig") as srt_file_ko:
 
             for i, segment in enumerate(result['segments']):
                 start_time = format_time(segment['start'])
@@ -115,6 +119,11 @@ def generate_subtitles(video_path, model_name="base"):
                 srt_file_ru.write(f"{i + 1}\n")
                 srt_file_ru.write(f"{start_time} --> {end_time}\n")
                 srt_file_ru.write(f"{russian_text}\n\n")
+                
+                # Write Korean SRT entry
+                srt_file_ko.write(f"{i + 1}\n")
+                srt_file_ko.write(f"{start_time} --> {end_time}\n")
+                srt_file_ko.write(f"{korean_text}\n\n")
 
     except Exception as e:
         print(f"Error writing SRT files: {e}")
@@ -126,6 +135,7 @@ def generate_subtitles(video_path, model_name="base"):
     print("\n--- Process Complete! ---")
     print(f"English subtitles saved to: {srt_path_en}")
     print(f"Russian subtitles saved to: {srt_path_ru}")
+    print(f"Korean subtitles saved to: {srt_path_ko}")
 
 
 if __name__ == '__main__':
@@ -133,7 +143,7 @@ if __name__ == '__main__':
     VIDEO_FILE_PATH = "korean_video_sample.mp4" 
     
     # Choose your model. Options: "tiny", "base", "small", "medium", "large"
-    WHISPER_MODEL = "base"
+    WHISPER_MODEL = "turbo"
     
     # --- EXECUTION ---
     print("--- Starting Auto-Subtitle Script ---")
